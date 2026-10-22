@@ -14,4 +14,13 @@ npm test
 npm run dev
 ```
 
-Seed data lives in `seed/`; the case brief is in `docs/`.
+## Database and seed data
+
+```bash
+npm run db:migrate           # apply Drizzle migrations to Neon
+npm run seed                 # validate and load seed/ into Neon (one transaction)
+npm run seed -- --reset      # also wipe runs and decisions before loading
+npm run seed -- --dir=PATH   # load from another folder
+```
+
+The seed script validates first and writes nothing if anything is wrong (duplicate SKU/week pairs, missing weeks, negative or non-integer units, SKUs missing from the SKU master or inventory, unparseable weeks, and more). Seed data lives in `seed/`; the case brief is in `docs/`.
