@@ -26,6 +26,9 @@ The other 15-20% (new launches, unusual distributor behaviour, one-off events) i
 - The surge test uses raw actuals (no uplift). Uplift applies only to the demand used for cover weeks.
 - Outlier z-score uses the sample standard deviation.
 - Tagged event weeks are excluded from averages; the SKU is routed as an edge case.
+- Quantities are whole units: 1.5x standard is rounded half up. All limit comparisons are strict (exactly 6.0 weeks of cover is not a stockout).
+- A missing week inside the window counts against history, so it fires both DATA_MISSING_WEEKS and SHORT_HISTORY.
+- With the default 4-recent / 8-prior windows, surge and step change are the same quantity (surge = 2s/(3+s) for step s), so any high-demand SKU above a 33.3% step is also routed when step_change_threshold is 0.30. This is why SKU001 is an edge case.
 - Override rate = overridden (Edit or Reject) engine decisions / all non-edge decisions in the run, NO_ACTION included.
 
 ## Hard rules
