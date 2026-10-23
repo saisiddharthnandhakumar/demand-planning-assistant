@@ -61,6 +61,13 @@ Next.js (App Router, TypeScript), Tailwind + shadcn/ui, Recharts, Neon Postgres 
 - "use server" files may export only async functions: put constants in lib/.
 - Quarters on the money card are calendar quarters, labelled with their months. "Rs vs last quarter" = last total minus this total (positive is better).
 
+## Gemini (M7)
+
+- Model: `gemini-3.8-flash` (GA; verified in Google's docs and with a live call). It comes from `GEMINI_MODEL`, never hard-coded.
+- SDK `@google/genai` 2.x: use `ai.models.generateContent` with `responseMimeType: "application/json"` and `responseJsonSchema`, `thinkingConfig.thinkingLevel: LOW` (short tasks), and an `AbortSignal` timeout. Do not set temperature/top_p/top_k (newer Gemini models ignore them). The SDK also has an Interactions API; we do not use it.
+- Gemini only (a) turns a free-text event note into tags a human confirms and (b) writes an edge brief (max 80 words, no actions, no quantities, no numbers that are not in the input). It never changes a flag, quantity or threshold, and a run never fails because Gemini is down.
+- Never print `GEMINI_API_KEY`. When checking env files, print names and "set/empty" only.
+
 ## Workflow
 
 Built in milestones M0-M10. Finish one, run its tests, show the results, wait for the go-ahead before the next.
