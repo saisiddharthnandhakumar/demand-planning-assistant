@@ -91,6 +91,19 @@ describe("checkBrief", () => {
     expect(checkBrief("Distributor orders fell, and the shoulder weeks look normal.", DATA).ok).toBe(true);
   });
 
+  it("rejects a brief that pastes field names from the data instead of writing prose", () => {
+    for (const text of [
+      "Sales moved from a priorAverage of 191.9 to a recentAverage of 261.",
+      "The stepChangePercent is 36.",
+      "Check weeklyUnits for week 2026-W42.",
+    ]) {
+      const r = checkBrief(text, DATA);
+      expect(r.ok, text).toBe(false);
+      expect(!r.ok && r.reason).toMatch(/internal field name/);
+    }
+    expect(checkBrief("Sales moved from an earlier average of 191.9 to a recent average of 261.", DATA).ok).toBe(true);
+  });
+
   it("rejects an empty brief and one over the word limit", () => {
     expect(checkBrief("   ", DATA).ok).toBe(false);
     const long = Array.from({ length: MAX_BRIEF_WORDS + 1 }, () => "sales").join(" ");

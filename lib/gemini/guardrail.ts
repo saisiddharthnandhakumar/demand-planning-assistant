@@ -54,6 +54,9 @@ export function numbersInData(data: unknown): Set<number> {
 /** Words that mean the brief is telling the planner what to do, which it must not. */
 const ACTION_LANGUAGE = /\b(re-?order(?:s|ed|ing)?|recommend(?:s|ed|ing|ation|ations)?|should|must|ought|advis(?:e|es|ed|able)|suggest(?:s|ed|ion|ions)?|place an order|buy|purchase more|increase (?:the )?(?:order|stock)|decrease (?:the )?(?:order|stock)|pause (?:the )?order)\b/i;
 
+/** camelCase tokens (recentAverage, stepChangePercent) mean the model pasted field names from the data instead of writing prose. */
+const FIELD_NAME_LEAK = /\b[a-z]+[A-Z][A-Za-z]*\b/;
+
 export const wordCount = (text: string) => text.trim().split(/\s+/).filter(Boolean).length;
 
 export type BriefCheck = { ok: true } | { ok: false; reason: string };
@@ -65,6 +68,9 @@ export function checkBrief(brief: string, data: unknown): BriefCheck {
 
   const action = ACTION_LANGUAGE.exec(text);
   if (action) return { ok: false, reason: `The brief gives advice ("${action[0]}"), which it must not.` };
+
+  const leaked = FIELD_NAME_LEAK.exec(text);
+  if (leaked) return { ok: false, reason: `The brief uses an internal field name ("${leaked[0]}") instead of plain words.` };
 
   const allowed = numbersInData(data);
   const unknown = [...new Set(extractNumbers(text))].filter((n) => !allowed.has(n));
