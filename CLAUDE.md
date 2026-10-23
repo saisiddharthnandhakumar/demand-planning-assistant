@@ -45,6 +45,14 @@ The other 15-20% (new launches, unusual distributor behaviour, one-off events) i
 
 Next.js (App Router, TypeScript), Tailwind + shadcn/ui, Recharts, Neon Postgres via `@neondatabase/serverless` + Drizzle, Zod for all inputs, Vitest, `@google/genai`, Vercel Cron. Node 22+. In this Next.js version the old `middleware.ts` is `proxy.ts`; read `node_modules/next/dist/docs/` before using framework APIs (see AGENTS.md).
 
+## Project conventions
+
+- Cache Components is off in `next.config.ts` on purpose (all pages are authenticated and dynamic). Pages that read the database call `await connection()` so nothing runs at build time.
+- Every Server Action starts with `await requireAuth()`; the proxy alone is not enough.
+- Forms that use `useActionState` must use controlled inputs: React 19 resets uncontrolled fields after each action.
+- `saveRules` is one atomic SQL statement driven by the UPDATE (history and audit rows exist only if the update happened) with an optimistic `expectedVersion` check. Keep that shape for any other versioned write.
+- shadcn's generator imports `cn` from an npm package named `cn`; rewrite those imports to `@/lib/utils` and remove the package after every `shadcn add`.
+
 ## Workflow
 
 Built in milestones M0-M10. Finish one, run its tests, show the results, wait for the go-ahead before the next.

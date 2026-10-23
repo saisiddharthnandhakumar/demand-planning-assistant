@@ -7,6 +7,7 @@ import {
   distributors,
   inventory,
   purchaseOrders,
+  rules,
   runItems,
   runs,
   skus,
@@ -14,6 +15,7 @@ import {
   systemState,
   weeklySales,
 } from "@/lib/db/schema";
+import { INITIAL_RULES } from "@/lib/rules";
 import type { SeedData } from "./types";
 
 export class SeedWriteError extends Error {}
@@ -50,6 +52,11 @@ export async function writeSeed(db: Db, data: SeedData, opts: { reset?: boolean 
     db.insert(calendar).values(data.calendar),
     // The pause flag row must exist; never overwrite an existing one.
     db.insert(systemState).values({ id: 1 }).onConflictDoNothing(),
+    // Initial rules are loaded once; re-seeding never overwrites edited rules.
+    db
+      .insert(rules)
+      .values({ id: 1, version: 1, document: INITIAL_RULES, updatedBy: "system (initial seed)" })
+      .onConflictDoNothing(),
   );
   await db.batch(statements as [BatchItem<"pg">, ...BatchItem<"pg">[]]);
 }
@@ -67,5 +74,6 @@ export async function tableCounts(db: Db) {
     inventory: await c(inventory),
     calendar: await c(calendar),
     system_state: await c(systemState),
+    rules: await c(rules),
   };
 }

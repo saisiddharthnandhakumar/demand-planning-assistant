@@ -41,21 +41,21 @@ export const rulesSchema = z
       ctx.addIssue({
         code: "custom",
         path: ["surge_recent_weeks"],
-        message: "surge_recent_weeks must be smaller than baseline_weeks",
+        message: "The recent window must be shorter than the baseline window.",
       });
     }
     if (r.stockout_weeks >= r.overstock_weeks) {
       ctx.addIssue({
         code: "custom",
         path: ["stockout_weeks"],
-        message: "stockout_weeks must be smaller than overstock_weeks",
+        message: "The stockout limit must be smaller than the overstock limit.",
       });
     }
     if (r.perishable.min_weeks >= r.perishable.max_weeks) {
       ctx.addIssue({
         code: "custom",
         path: ["perishable", "min_weeks"],
-        message: "perishable.min_weeks must be smaller than perishable.max_weeks",
+        message: "The perishable minimum must be smaller than the perishable maximum.",
       });
     }
   });

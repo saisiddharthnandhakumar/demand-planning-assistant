@@ -1,9 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
+  // Cache Components is deliberately off: every page here is authenticated and
+  // dynamic, so the classic model (dynamic APIs opt a route into request-time
+  // rendering) is simpler than wrapping each page's data in Suspense.
   turbopack: {
     rules: {
       "*.css": {
