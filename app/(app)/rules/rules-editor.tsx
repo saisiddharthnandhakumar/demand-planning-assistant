@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { DecisionSummary } from "@/lib/engine/compare";
+import { describeAction } from "@/lib/engine/labels";
 import { RULE_GROUPS, formatRuleValue, ruleLabel } from "@/lib/rules-form";
 import {
   previewRules,
@@ -17,15 +18,8 @@ import {
   type SaveState,
 } from "./actions";
 
-const ACTION_LABEL: Record<DecisionSummary["action"], string> = {
-  REORDER_NOW: "Reorder now",
-  REORDER: "Reorder",
-  PAUSE_ORDER: "Pause order",
-  NO_ACTION: "No action",
-};
-
 function describe(d: DecisionSummary) {
-  const text = `${ACTION_LABEL[d.action]}${d.qty > 0 ? ` ${d.qty}` : ""}`;
+  const text = describeAction(d.action, d.qty);
   return d.isEdge ? `Needs your judgment (rules would say: ${text.toLowerCase()})` : text;
 }
 

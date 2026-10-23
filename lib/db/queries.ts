@@ -5,10 +5,14 @@ import {
   inventory,
   rules,
   rulesHistory,
+  runItems,
+  runs,
   skus,
+  systemState,
   weeklySales,
 } from "@/lib/db/schema";
 import type { EngineInput } from "@/lib/engine/types";
+import { AsOfDateError } from "@/lib/runs/errors";
 import { rulesSchema, type Rules } from "@/lib/rules";
 import { diffRules, type RulesVersion } from "@/lib/rules-timeline";
 
@@ -122,6 +126,24 @@ export async function saveRules(
 }
 
 // ---------------------------------------------------------------------------
+// System state (pause flag)
+// ---------------------------------------------------------------------------
+
+/** Earliest and latest inventory snapshot dates, or null if there is none. */
+export async function getInventoryDateRange(db: Db): Promise<{ first: string; last: string } | null> {
+  const [row] = await db
+    .select({ first: sql<string | null>`min(${inventory.asOfDate})`, last: sql<string | null>`max(${inventory.asOfDate})` })
+    .from(inventory);
+  return row?.first && row.last ? { first: row.first, last: row.last } : null;
+}
+
+export async function getSystemState(db: Db) {
+  const [row] = await db.select().from(systemState).where(eq(systemState.id, 1));
+  if (!row) throw new Error("system_state row is missing. Run `npm run seed`.");
+  return row;
+}
+
+// ---------------------------------------------------------------------------
 // Engine input
 // ---------------------------------------------------------------------------
 
@@ -151,7 +173,9 @@ export async function loadEngineInput(
     .select({ d: max(inventory.asOfDate) })
     .from(inventory)
     .where(lte(inventory.asOfDate, asOfDate));
-  if (!snap?.d) throw new Error(`No inventory snapshot on or before ${asOfDate}.`);
+  if (!snap?.d) {
+    throw new AsOfDateError(`There is no stock data on or before ${asOfDate}. Choose a date on or after the first inventory snapshot.`);
+  }
   const inventoryAsOf = snap.d;
 
   const [skuRows, salesRows, inventoryRows, calendarRows] = await Promise.all([
@@ -179,4 +203,51 @@ export async function loadEngineInput(
     events: [],
   };
   return { input, rulesVersion: current.version, inventoryAsOf };
+}
+
+// ---------------------------------------------------------------------------
+// Runs
+// ---------------------------------------------------------------------------
+
+export async function listRuns(db: Db, limit = 50) {
+  return db
+    .select({
+      id: runs.id,
+      trigger: runs.trigger,
+      status: runs.status,
+      asOfDate: runs.asOfDate,
+      startedAt: runs.startedAt,
+      submittedAt: runs.submittedAt,
+      overrideRate: runs.overrideRate,
+      skipReason: runs.skipReason,
+      error: runs.error,
+      rulesVersion: runs.rulesVersion,
+      items: sql<number>`count(${runItems.skuId})::int`,
+      edge: sql<number>`(count(*) filter (where ${runItems.isEdge}))::int`,
+    })
+    .from(runs)
+    .leftJoin(runItems, eq(runItems.runId, runs.id))
+    .groupBy(runs.id)
+    .orderBy(desc(runs.startedAt))
+    .limit(limit);
+}
+
+/** A run with every SKU's result, or null if it does not exist. */
+export async function getRunDetail(db: Db, id: string) {
+  const [run] = await db.select().from(runs).where(eq(runs.id, id));
+  if (!run) return null;
+  const items = await db
+    .select({
+      item: runItems,
+      skuName: skus.skuName,
+      category: skus.category,
+      perishability: skus.perishability,
+      standardReorderQty: skus.standardReorderQty,
+      distributorId: skus.distributorId,
+    })
+    .from(runItems)
+    .innerJoin(skus, eq(skus.skuId, runItems.skuId))
+    .where(eq(runItems.runId, id))
+    .orderBy(runItems.skuId);
+  return { run, items };
 }

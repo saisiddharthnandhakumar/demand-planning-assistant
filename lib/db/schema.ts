@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm";
+import type { EdgeReason, SkuMetrics } from "@/lib/engine/types";
 import {
   bigint,
   boolean,
@@ -148,6 +149,8 @@ export const runs = pgTable(
       .$type<"skipped" | "open" | "submitted" | "failed">()
       .notNull(),
     skipReason: text(),
+    // Why a run failed (status = failed). A skipped run uses skipReason instead.
+    error: text(),
     startedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
     submittedAt: timestamp({ withTimezone: true }),
     submittedBy: text(),
@@ -175,14 +178,14 @@ export const runItems = pgTable(
     skuId: text()
       .notNull()
       .references(() => skus.skuId),
-    metrics: jsonb().notNull(),
+    metrics: jsonb().$type<SkuMetrics>().notNull(),
     flags: jsonb().$type<string[]>().notNull().default(sql`'[]'::jsonb`),
     // What the rules say. For edge SKUs this is reference only.
     recommendedAction: text(),
     recommendedQty: integer(),
     reason: text(),
     isEdge: boolean().notNull().default(false),
-    edgeReasons: jsonb().$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    edgeReasons: jsonb().$type<EdgeReason[]>().notNull().default(sql`'[]'::jsonb`),
     edgeBrief: text(),
     decisionStatus: text()
       .$type<"pending" | "approved" | "edited" | "rejected">()
