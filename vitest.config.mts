@@ -8,5 +8,8 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["tests/**/*.test.ts"],
+    // The opt-in integration suites share one database (and one of them pauses the
+    // system on purpose), so test files must not run at the same time.
+    fileParallelism: false,
   },
 });

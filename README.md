@@ -2,7 +2,7 @@
 
 Internal tool that automates the data work of demand planning and applies a planner's documented reorder rules twice a week. Every recommendation is approved by a human before draft purchase orders are created in Zoho Inventory. The app never sends or issues a PO.
 
-Status: under construction (milestones M0 to M6 complete). See `CLAUDE.md` for the design commitments and rules. A full README (setup, env vars, Zoho credentials, known limitations) arrives in M10.
+Status: under construction (milestones M0 to M7 complete). See `CLAUDE.md` for the design commitments and rules. A full README (setup, env vars, Zoho credentials, known limitations) arrives in M10.
 
 ## Quick start
 
@@ -49,6 +49,22 @@ A run can be submitted only when every SKU has a decision and the system is not 
 - **Resume** (Settings): type `RESUME`, write a reason (10+ characters) and your name. All three are written to `audit_log` with what the pause was about; the streak is reset.
 - **Dashboard:** kill-switch status, override rate per submitted run against the limit (with a table view), flag counts per run, draft purchase orders with Zoho links, and the money card.
 - **Money card** is entered by hand, because the case brief gives only a range (₹28–34 lakh per quarter) for the baseline. "Rs vs last quarter" = last quarter's total loss minus this quarter's. Quarters are *calendar* quarters (Oct–Dec is Q4) and the card carries a note that Oct–Dec contains festival months, so quarter-on-quarter comparisons are seasonal.
+
+## Events and AI briefs (Gemini)
+
+Gemini is used in exactly two places and never decides anything. Model: `gemini-3.8-flash` (set `GEMINI_MODEL`; verified in Google's docs). Key: `GEMINI_API_KEY`, server-side only.
+
+1. **Event notes → tags** (Events page). Type a note such as "competitor scheme on brown rice this week". The AI proposes structured tags (SKUs, categories or distributors, start and end ISO week, event type, confidence). They are checked against the real catalog (unknown ids are dropped with a warning), saved as an **unconfirmed draft**, and shown for you to confirm. Nothing applies until you confirm. A confirmed tag removes the tagged weeks from that SKU's averages and routes the SKU to "Needs your judgment"; it stops mattering once it ends before the baseline window, and can be switched off.
+2. **Edge briefs.** For each SKU routed to the planner the AI writes a brief of at most 80 words about *what changed and what could explain it*. A guardrail then checks that **every number in the brief appears in the data the model was given** (spelled-out numbers and "doubled" count too), that it gives no advice or quantity, stays within 80 words and does not paste field names. If the AI call fails, times out, returns something malformed or fails the guardrail, a deterministic template brief is used and the card shows "AI brief unavailable". **A run never fails because Gemini is down.**
+
+Flags, quantities, thresholds and the kill switch are computed by deterministic code only. Gemini output is stored as text.
+
+Opt-in tests that use real services (skipped by default; they write to the database they are pointed at, so use a dev or branch database):
+
+```bash
+GEMINI_LIVE=1 npx vitest run gemini.live                     # calls the real model
+TEST_DATABASE_URL="<dev db url>" npx vitest run events-db killswitch-sql
+```
 
 ## Database and seed data
 

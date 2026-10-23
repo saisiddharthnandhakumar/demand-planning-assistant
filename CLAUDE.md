@@ -66,6 +66,7 @@ Next.js (App Router, TypeScript), Tailwind + shadcn/ui, Recharts, Neon Postgres 
 - Model: `gemini-3.8-flash` (GA; verified in Google's docs and with a live call). It comes from `GEMINI_MODEL`, never hard-coded.
 - SDK `@google/genai` 2.x: use `ai.models.generateContent` with `responseMimeType: "application/json"` and `responseJsonSchema`, `thinkingConfig.thinkingLevel: LOW` (short tasks), and an `AbortSignal` timeout. Do not set temperature/top_p/top_k (newer Gemini models ignore them). The SDK also has an Interactions API; we do not use it.
 - Gemini only (a) turns a free-text event note into tags a human confirms and (b) writes an edge brief (max 80 words, no actions, no quantities, no numbers that are not in the input). It never changes a flag, quantity or threshold, and a run never fails because Gemini is down.
+- Opt-in suites that touch real services: `gemini.live.test.ts` (GEMINI_LIVE=1), `events-db.integration.test.ts` and `killswitch-sql.integration.test.ts` (TEST_DATABASE_URL). They share one database, so vitest runs test files one at a time (`fileParallelism: false`).
 - Never print `GEMINI_API_KEY`. When checking env files, print names and "set/empty" only.
 
 ## Workflow
