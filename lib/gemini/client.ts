@@ -1,4 +1,5 @@
 import { GoogleGenAI, ThinkingLevel } from "@google/genai";
+import { redactSecrets } from "@/lib/redact";
 
 /**
  * The only place that talks to Gemini. Server-only: it reads GEMINI_API_KEY.
@@ -12,12 +13,7 @@ export interface GeminiTransport {
 
 export class GeminiError extends Error {}
 
-/** Removes secrets from an error message before it can reach a log or the UI. */
-export function redactSecrets(message: string, secrets: (string | undefined)[]): string {
-  let out = message;
-  for (const s of secrets) if (s && s.length >= 6) out = out.split(s).join("[redacted]");
-  return out.replace(/([?&]key=)[^&\s"']+/gi, "$1[redacted]");
-}
+export { redactSecrets };
 
 export function createGeminiTransport(opts: { apiKey: string; model: string }): GeminiTransport {
   const ai = new GoogleGenAI({ apiKey: opts.apiKey });
