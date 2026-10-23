@@ -120,6 +120,7 @@ describe("prompts", () => {
     expect(p.systemInstruction).toMatch(/ONLY numbers that appear in the data/);
     expect(p.systemInstruction).toMatch(/Do NOT recommend/);
     expect(p.systemInstruction).toMatch(/Never copy field names/);
+    expect(p.systemInstruction).toMatch(/tentative wording/);
     expect(JSON.parse(p.contents.replace("Data for the SKU:\n", ""))).toEqual(JSON.parse(JSON.stringify(brief)));
   });
 

@@ -110,7 +110,7 @@ export function detectEdgeReasons(args: {
     reasons.push({
       code: "TAGGED_EVENT",
       message:
-        `Active event tag(s) cover this SKU: ${tags.map((t) => t.eventType ?? t.id).join(", ")}.` +
+        `Active event tag(s) cover this SKU: ${tags.map((t) => t.summary || t.eventType || t.id).join("; ")}.` +
         (m.excludedWeeks.length
           ? ` Tagged week(s) excluded from averages: ${m.excludedWeeks.join(", ")}.`
           : ""),

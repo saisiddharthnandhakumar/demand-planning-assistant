@@ -21,7 +21,8 @@ const errorText = (err: unknown) => redactSecrets(err instanceof Error ? err.mes
 
 export type ParseEventResult =
   | { ok: true; tag: EventTagDraft }
-  | { ok: false; kind: "invalid_note" | "unavailable" | "bad_answer"; error: string };
+  /** `error` is safe to show to the planner. `detail` is technical and is for the server log only. */
+  | { ok: false; kind: "invalid_note" | "unavailable" | "bad_answer"; error: string; detail?: string };
 
 export async function parseEventNote(
   transport: GeminiTransport | null,
@@ -42,17 +43,19 @@ export async function parseEventNote(
       signal: AbortSignal.timeout(args.timeoutMs ?? EVENT_PARSE_TIMEOUT_MS),
     });
   } catch (err) {
-    return { ok: false, kind: "unavailable", error: `The AI could not be reached (${errorText(err)}). Nothing was saved. Try again in a moment.` };
+    return { ok: false, kind: "unavailable", error: "The AI could not be reached, so nothing was saved. Try again in a moment.", detail: errorText(err) };
   }
 
   let raw: unknown;
   try {
     raw = JSON.parse(text);
   } catch {
-    return { ok: false, kind: "bad_answer", error: "The AI answer was not valid JSON. Nothing was saved. Try again." };
+    return { ok: false, kind: "bad_answer", error: "The AI gave an answer that could not be read, so nothing was saved. Try again.", detail: "invalid JSON from the model" };
   }
   const normalized = normalizeParsedEvent(raw, args.catalog, args.currentWeek);
-  return normalized.ok ? { ok: true, tag: normalized.tag } : { ok: false, kind: "bad_answer", error: `${normalized.error}. Nothing was saved. Try again.` };
+  return normalized.ok
+    ? { ok: true, tag: normalized.tag }
+    : { ok: false, kind: "bad_answer", error: "The AI gave an answer in an unexpected format, so nothing was saved. Try again.", detail: normalized.error };
 }
 
 // ---------------------------------------------------------------------------

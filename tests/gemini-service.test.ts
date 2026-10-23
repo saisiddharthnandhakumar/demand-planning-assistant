@@ -65,8 +65,9 @@ describe("parseEventNote", () => {
     it("API failure", async () => {
       const r = await parseEventNote(failing("503 Service Unavailable"), { ...args, note: "mango scheme" });
       expect(r).toMatchObject({ ok: false, kind: "unavailable" });
-      expect(!r.ok && r.error).toContain("503 Service Unavailable");
-      expect(!r.ok && r.error).toContain("Nothing was saved");
+      // the planner sees a plain sentence; the technical detail is kept for the log
+      expect(!r.ok && r.error).toBe("The AI could not be reached, so nothing was saved. Try again in a moment.");
+      expect(!r.ok && r.detail).toContain("503 Service Unavailable");
     });
 
     it("timeout", async () => {
@@ -79,7 +80,9 @@ describe("parseEventNote", () => {
     });
 
     it("invalid JSON", async () => {
-      expect(await parseEventNote(fixed("not json"), { ...args, note: "x" })).toMatchObject({ ok: false, kind: "bad_answer" });
+      const r = await parseEventNote(fixed("not json"), { ...args, note: "x" });
+      expect(r).toMatchObject({ ok: false, kind: "bad_answer" });
+      expect(!r.ok && r.error).toContain("nothing was saved");
     });
 
     it("JSON in the wrong shape", async () => {
@@ -94,7 +97,8 @@ describe("parseEventNote", () => {
     try {
       const r = await parseEventNote(failing("request to ...?key=test-key-VERY-SECRET-123456 failed"), { ...args, note: "x" });
       expect(!r.ok && r.error).not.toContain("VERY-SECRET");
-      expect(!r.ok && r.error).toContain("[redacted]");
+      expect(!r.ok && r.detail).not.toContain("VERY-SECRET");
+      expect(!r.ok && r.detail).toContain("[redacted]");
     } finally {
       if (before === undefined) delete process.env.GEMINI_API_KEY;
       else process.env.GEMINI_API_KEY = before;

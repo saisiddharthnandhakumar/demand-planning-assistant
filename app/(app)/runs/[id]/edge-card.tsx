@@ -46,6 +46,22 @@ export function EdgeCard({ runId, item, editable, recentWeeks }: { runId: string
                 ))}
               </ul>
             </div>
+            {item.edgeBrief && (
+              <div>
+                <h3 className="flex items-center gap-2 text-sm font-medium">
+                  Brief
+                  {item.edgeBriefSource === "ai" && <Badge variant="outline">AI-written</Badge>}
+                </h3>
+                <p className="mt-1 text-sm">{item.edgeBrief}</p>
+                {item.edgeBriefSource === "template" ? (
+                  <p className="mt-1 text-xs text-muted-foreground" title={item.edgeBriefFallbackReason ?? undefined}>
+                    AI brief unavailable. This is a standard summary built from the same numbers.
+                  </p>
+                ) : (
+                  <p className="mt-1 text-xs text-muted-foreground">Written by AI from the numbers below, and checked so that it uses no other numbers. It describes what changed and never recommends an action.</p>
+                )}
+              </div>
+            )}
             <dl className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm sm:grid-cols-4">
               <Metric label={`Last ${recentWeeks} wk avg`} value={fmt(item.avg4)} />
               <Metric label="Prior wk avg" value={fmt(item.prior8)} />

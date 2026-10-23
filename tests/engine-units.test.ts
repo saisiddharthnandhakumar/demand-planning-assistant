@@ -336,6 +336,14 @@ describe("edge router", () => {
       expect(i.isEdge).toBe(true);
     });
 
+    it("the routing reason uses the tag's summary when it has one, and the event type otherwise", () => {
+      const withSummary = one({ ...spiky(), events: [tag({ summary: "Competitor scheme on brown rice" })] });
+      expect(withSummary.edgeReasons[0].message).toContain("Competitor scheme on brown rice");
+      expect(withSummary.edgeReasons[0].message).not.toContain("competitor_scheme");
+      const without = one({ ...spiky(), events: [tag({})] });
+      expect(without.edgeReasons[0].message).toContain("competitor_scheme");
+    });
+
     it("range is inclusive at both ends", () => {
       const i = one({ ...spiky(), events: [tag({ startWeek: weeks[8], endWeek: weeks[9] })] });
       expect(i.metrics.excludedWeeks).toEqual([weeks[8], weeks[9]]);
