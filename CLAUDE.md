@@ -53,6 +53,10 @@ Next.js (App Router, TypeScript), Tailwind + shadcn/ui, Recharts, Neon Postgres 
 - `saveRules` is one atomic SQL statement driven by the UPDATE (history and audit rows exist only if the update happened) with an optimistic `expectedVersion` check. Keep that shape for any other versioned write.
 - shadcn's generator imports `cn` from an npm package named `cn`; rewrite those imports to `@/lib/utils` and remove the package after every `shadcn add`.
 
+- Decision semantics live in `lib/decisions.ts` (pure, tested): approve copies the recommendation; edit changes action/quantity (must differ, reason required); reject = NO_ACTION (reason required, not allowed on a NO_ACTION row); edge SKUs accept only "decide" with an empty form. Edge decisions are stored with status `approved`; `is_edge` distinguishes them and their reason is kept in `override_reason`.
+- Item writes are guarded in SQL by "run is open", so a submitted run cannot change even if a request races the submit. Submit is optimistic: the rate is computed in TS (`lib/override-rate.ts`) and the UPDATE only commits if the counts it was computed from still hold.
+- `runs.override_rate` is stored rounded to 4 decimals. The kill switch (M6) must decide a breach from the run's items (`overrideRate(items) > threshold`), not from the rounded stored value.
+
 ## Workflow
 
 Built in milestones M0-M10. Finish one, run its tests, show the results, wait for the go-ahead before the next.

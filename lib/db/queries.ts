@@ -56,6 +56,11 @@ export async function getRulesVersions(db: Db): Promise<{ current: RulesVersion;
   return { current, all: [current, ...past] };
 }
 
+/** The current rules document only (no version metadata). */
+export async function getRuleSet(db: Db): Promise<Rules> {
+  return (await getRules(db)).document;
+}
+
 export type SaveRulesResult =
   | { status: "saved"; version: number; changes: ReturnType<typeof diffRules> }
   | { status: "unchanged" }
