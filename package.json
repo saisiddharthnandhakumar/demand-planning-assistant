@@ -13,7 +13,10 @@
     "db:check": "tsx scripts/check-db.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "seed": "tsx scripts/seed.ts"
+    "seed": "tsx scripts/seed.ts",
+    "zoho:token": "tsx scripts/zoho-token.ts",
+    "zoho:lookup": "tsx scripts/zoho-lookup.ts",
+    "vendor-map:update": "tsx scripts/update-vendor-map.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

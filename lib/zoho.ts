@@ -242,3 +242,34 @@ export function createZohoClient(config: ZohoConfig, deps: { fetch?: FetchLike; 
     listItems: () => listAll("items", "items", {}, (r) => ({ id: String(r.item_id), name: String(r.name ?? ""), sku: typeof r.sku === "string" && r.sku ? r.sku : null })),
   };
 }
+
+/**
+ * One-time step of connecting Zoho: exchanges the grant code from the API
+ * Console's "Generate Code" tab for a long-lived refresh token. The grant code
+ * expires within minutes and works once. Returns only what is needed.
+ */
+export async function exchangeGrantCode(
+  args: { dc: string; clientId: string; clientSecret: string; code: string },
+  deps: { fetch?: FetchLike } = {},
+): Promise<{ refreshToken: string; apiDomain: string | null }> {
+  const domains = ZOHO_DOMAINS[args.dc.trim().toLowerCase()];
+  if (!domains) throw new ZohoError(`Unknown data centre "${args.dc}". Use one of ${Object.keys(ZOHO_DOMAINS).join(", ")}.`, "auth");
+  const secrets = [args.clientSecret, args.code];
+  let res: Response;
+  try {
+    res = await (deps.fetch ?? fetch)(`${domains.accounts}/oauth/v2/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ grant_type: "authorization_code", client_id: args.clientId, client_secret: args.clientSecret, code: args.code }),
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    });
+  } catch (err) {
+    throw new ZohoError(redactSecrets(`Could not reach Zoho: ${err instanceof Error ? err.message : String(err)}`, secrets), "auth");
+  }
+  const json = (await res.json().catch(() => null)) as { refresh_token?: string; api_domain?: string; error?: string } | null;
+  if (!res.ok || !json || json.error || !json.refresh_token) {
+    const why = json?.error === "invalid_code" ? "the grant code is wrong, already used or expired (it only lasts a few minutes: generate a new one)" : (json?.error ?? `HTTP ${res.status}`);
+    throw new ZohoError(redactSecrets(`Zoho did not give a refresh token: ${why}. Also check that ZOHO_DC matches the data centre of your Zoho account.`, secrets), "auth", undefined, res.status);
+  }
+  return { refreshToken: json.refresh_token, apiDomain: json.api_domain ?? null };
+}

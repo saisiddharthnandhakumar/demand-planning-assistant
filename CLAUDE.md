@@ -69,6 +69,14 @@ Next.js (App Router, TypeScript), Tailwind + shadcn/ui, Recharts, Neon Postgres 
 - Opt-in suites that touch real services: `gemini.live.test.ts` (GEMINI_LIVE=1), `events-db.integration.test.ts` and `killswitch-sql.integration.test.ts` (TEST_DATABASE_URL). They share one database, so vitest runs test files one at a time (`fileParallelism: false`).
 - Never print `GEMINI_API_KEY`. When checking env files, print names and "set/empty" only.
 
+## Zoho (M8)
+
+- Client: `lib/zoho.ts`. It can only create a purchase order (`POST /inventory/v1/purchaseorders`, JSON body, `Authorization: Zoho-oauthtoken`) and read vendors and items. There is deliberately no method for issue/send/submit/approve and a test asserts none is ever called. Response key is `purchase_order`; the price field would be `purchase_rate`.
+- Live only when `ZOHO_MODE` is exactly `live`. Dry-run builds no client and makes no network call.
+- Failure kinds: `rejected` (safe to retry), `unknown` (timeout/5xx: never auto-retried, the PO may exist), `auth`. Creates are never auto-retried.
+- Idempotency is the unique (run, vendor) row, claimed BEFORE the Zoho call. Paused system: no row, no call.
+- Never log tokens; redact via `lib/redact.ts`.
+
 ## Workflow
 
 Built in milestones M0-M10. Finish one, run its tests, show the results, wait for the go-ahead before the next.

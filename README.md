@@ -2,7 +2,7 @@
 
 Internal tool that automates the data work of demand planning and applies a planner's documented reorder rules twice a week. Every recommendation is approved by a human before draft purchase orders are created in Zoho Inventory. The app never sends or issues a PO.
 
-Status: under construction (milestones M0 to M7 complete). See `CLAUDE.md` for the design commitments and rules. A full README (setup, env vars, Zoho credentials, known limitations) arrives in M10.
+Status: under construction (milestones M0 to M8 complete). See `CLAUDE.md` for the design commitments and rules. A full README (setup, env vars, Zoho credentials, known limitations) arrives in M10.
 
 ## Quick start
 
@@ -63,8 +63,22 @@ Opt-in tests that use real services (skipped by default; they write to the datab
 
 ```bash
 GEMINI_LIVE=1 npx vitest run gemini.live                     # calls the real model
-TEST_DATABASE_URL="<dev db url>" npx vitest run events-db killswitch-sql
+TEST_DATABASE_URL="<dev db url>" npx vitest run events-db killswitch-sql po-db
 ```
+
+## Draft purchase orders (Zoho)
+
+Submitting a run creates **one draft purchase order per vendor** in Zoho Inventory. Vendors come from `sku_vendor_map` (the supplier you buy from), not from the distributor in the SKU file. The request contains the vendor, a reference (the run id), the date, a note naming the approver, and item and quantity lines: **no prices and no status**, so Zoho creates a draft and procurement adds prices and sends it. The app has no code path that issues, sends, submits or approves an order.
+
+- **`ZOHO_MODE=dry-run` (the default)** prepares each order and shows the exact request it would send, but makes **no network call**. Only the exact word `live` turns live mode on.
+- **Idempotent.** A unique (run, vendor) slot is taken before any call, so a re-submit, retry or double-click cannot create a second order. Only failed orders are retried.
+- **Unclear outcomes** (a timeout, a server error) are never retried automatically, because the order might exist. They wait for a person to check Zoho and release them.
+- **Blocked while the system is paused.** Nothing is stored or sent.
+- **Placeholder ids** (the sample vendor map) can be previewed but are refused in live mode, with no call to Zoho.
+
+How to get the credentials and map your vendors and items: **`docs/SETUP-SERVICES.md`**. Helper commands: `npm run zoho:token -- <grant code>`, `npm run zoho:lookup`, `npm run vendor-map:update`.
+
+Known gaps in what Zoho's public docs say (settled by the first live test): whether a purchase order number or a line price is mandatory, and whether a new order defaults to Draft (the app checks the status Zoho returns and warns if it is anything else).
 
 ## Database and seed data
 
