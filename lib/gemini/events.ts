@@ -153,7 +153,23 @@ export function toEngineTag(id: string, t: EventTagDraft): EventTag {
     startWeek: t.startWeek,
     endWeek: t.endWeek,
     eventType: t.eventType,
+    summary: t.summary,
   };
+}
+
+/**
+ * Whether a confirmed tag still matters for a run whose baseline window starts
+ * at `windowStartWeek`. A tag that ended before the window began has no effect
+ * on any average any more, so it must stop routing SKUs. Tags that overlap the
+ * window, or lie in the future (a scheme next week), stay relevant.
+ */
+export const tagIsRelevant = (t: Pick<EventTagDraft, "endWeek">, windowStartWeek: string) => t.endWeek >= windowStartWeek;
+
+/** "expired", "upcoming" or "current", for display. `lastCompleteWeek` is the newest finished sales week. */
+export function tagTiming(t: Pick<EventTagDraft, "startWeek" | "endWeek">, windowStartWeek: string, lastCompleteWeek: string): "expired" | "upcoming" | "current" {
+  if (t.endWeek < windowStartWeek) return "expired";
+  if (t.startWeek > lastCompleteWeek) return "upcoming";
+  return "current";
 }
 
 /** Stored tags are re-validated on the way out of the database. */

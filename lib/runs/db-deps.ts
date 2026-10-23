@@ -3,6 +3,8 @@ import type { BatchItem } from "drizzle-orm/batch";
 import { getDb, type Db } from "@/lib/db";
 import { getSystemState, loadEngineInput } from "@/lib/db/queries";
 import { auditLog, runItems, runs } from "@/lib/db/schema";
+import { getGeminiTransport } from "@/lib/gemini/client";
+import { writeEdgeBriefs } from "./briefs";
 import { startRun, type RunDeps, type RunTrigger, type StartRunResult } from "./start";
 
 export function dbRunDeps(db: Db): RunDeps {
@@ -30,6 +32,8 @@ export function dbRunDeps(db: Db): RunDeps {
       return row?.id ?? null;
     },
 
+    writeBriefs: (result, input) => writeEdgeBriefs(result, input, getGeminiTransport()),
+
     async saveOpenRun(run) {
       // One batch = one transaction: the run, all its items and the audit row, or nothing.
       const statements: BatchItem<"pg">[] = [
@@ -40,6 +44,7 @@ export function dbRunDeps(db: Db): RunDeps {
           status: "open",
           rulesVersion: run.rulesVersion,
           rulesSnapshot: run.rulesSnapshot,
+          eventsSnapshot: run.eventsSnapshot,
         }),
         db.insert(runItems).values(run.items),
         db.insert(auditLog).values({

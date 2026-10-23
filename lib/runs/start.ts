@@ -1,5 +1,7 @@
 import { runEngine } from "@/lib/engine";
-import type { EngineResult } from "@/lib/engine/types";
+import type { EngineInput, EngineResult, EventTag } from "@/lib/engine/types";
+import type { EdgeBrief } from "@/lib/gemini/service";
+import { fallbackBrief } from "./briefs";
 import type { Rules } from "@/lib/rules";
 import { AsOfDateError } from "./errors";
 import { engineItemToRow, type RunItemRow } from "./map";
@@ -23,6 +25,7 @@ export interface OpenRun {
   asOfDate: string;
   rulesVersion: number;
   rulesSnapshot: Rules;
+  eventsSnapshot: EventTag[];
   items: RunItemRow[];
 }
 
@@ -44,6 +47,11 @@ export interface RunDeps {
   }>;
   /** Id of an open run with the same trigger and as-of date started at or after `since`. */
   findRecentOpenRun(args: { trigger: RunTrigger; asOfDate: string; since: Date }): Promise<string | null>;
+  /**
+   * Writes a brief for every edge SKU. Gemini is only ever used here and for
+   * event notes. It may be slow or down: callers must not depend on it succeeding.
+   */
+  writeBriefs(result: EngineResult, input: EngineInput): Promise<Map<string, EdgeBrief>>;
   /** Atomically stores the run, its items and an audit entry, or nothing. */
   saveOpenRun(run: OpenRun): Promise<void>;
   /** Stores a skipped or failed run (no items). */
@@ -86,6 +94,15 @@ export async function startRun(
     if (duplicate) return { status: "existing", runId: duplicate };
 
     const result = runEngine(input);
+
+    // The AI step can never fail a run: any problem leaves the deterministic brief in its place.
+    let briefs = new Map<string, EdgeBrief>();
+    try {
+      briefs = await deps.writeBriefs(result, input);
+    } catch {
+      /* every edge item still gets a template brief below */
+    }
+
     const id = deps.newId();
     await deps.saveOpenRun({
       id,
@@ -93,7 +110,10 @@ export async function startRun(
       asOfDate: result.asOfDate,
       rulesVersion,
       rulesSnapshot: input.rules,
-      items: result.items.map((item) => engineItemToRow(id, item)),
+      eventsSnapshot: input.events ?? [],
+      items: result.items.map((item) =>
+        engineItemToRow(id, item, item.isEdge ? (briefs.get(item.skuId) ?? fallbackBrief(item, input, "The AI brief step did not complete.")) : undefined),
+      ),
     });
     return { status: "started", runId: id, asOfDate: result.asOfDate, summary: result.summary };
   } catch (err) {

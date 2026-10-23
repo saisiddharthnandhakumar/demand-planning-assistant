@@ -12,6 +12,8 @@ import {
   weeklySales,
 } from "@/lib/db/schema";
 import type { EngineInput } from "@/lib/engine/types";
+import { windowWeeks } from "@/lib/engine/metrics";
+import { loadActiveEventTags } from "@/lib/db/events";
 import { AsOfDateError } from "@/lib/runs/errors";
 import { rulesSchema, type Rules } from "@/lib/rules";
 import { diffRules, type RulesVersion } from "@/lib/rules-timeline";
@@ -183,6 +185,7 @@ export async function loadEngineInput(
   }
   const inventoryAsOf = snap.d;
 
+  const rules = opts.rules ?? current.document;
   const [skuRows, salesRows, inventoryRows, calendarRows] = await Promise.all([
     db.select().from(skus).orderBy(skus.skuId),
     db.select().from(weeklySales),
@@ -203,9 +206,9 @@ export async function loadEngineInput(
     sales: salesRows.map((w) => ({ skuId: w.skuId, isoWeek: w.isoWeek, units: w.units })),
     inventory: inventoryRows.map((i) => ({ skuId: i.skuId, unitsOnHand: i.unitsOnHand })),
     calendar: calendarRows.map((c) => ({ year: c.year, month: c.month, isFestivalMonth: c.isFestivalMonth })),
-    rules: opts.rules ?? current.document,
-    // Confirmed event tags are loaded here from M7 onwards.
-    events: [],
+    rules,
+    // Confirmed, active event tags that still touch the baseline window (older ones have expired).
+    events: await loadActiveEventTags(db, windowWeeks(asOfDate, rules.baseline_weeks)[0]),
   };
   return { input, rulesVersion: current.version, inventoryAsOf };
 }

@@ -25,6 +25,9 @@ export interface RunItemView {
   reason: string;
   isEdge: boolean;
   edgeReasons: EdgeReason[];
+  edgeBrief: string | null;
+  edgeBriefSource: "ai" | "template" | null;
+  edgeBriefFallbackReason: string | null;
   decisionStatus: DecisionStatus;
   finalAction: Action | null;
   finalQty: number | null;
@@ -63,6 +66,9 @@ export function toItemView({ item, skuName, category, perishability, standardReo
     reason: item.reason ?? "",
     isEdge: item.isEdge,
     edgeReasons: item.edgeReasons,
+    edgeBrief: item.edgeBrief,
+    edgeBriefSource: item.edgeBriefSource,
+    edgeBriefFallbackReason: item.edgeBriefFallbackReason,
     decisionStatus: item.decisionStatus,
     finalAction: item.finalAction as Action | null,
     finalQty: item.finalQty,

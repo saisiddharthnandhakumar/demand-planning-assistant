@@ -15,6 +15,13 @@
       "when": 1792732964202,
       "tag": "0001_serious_gorilla_man",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792737556182,
+      "tag": "0002_early_psylocke",
+      "breakpoints": true
     }
   ]
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { EVENT_JSON_SCHEMA, normalizeParsedEvent, tagHasTargets, toEngineTag, type Catalog } from "@/lib/gemini/events";
+import { EVENT_JSON_SCHEMA, normalizeParsedEvent, tagHasTargets, tagIsRelevant, tagTiming, toEngineTag, type Catalog } from "@/lib/gemini/events";
 
 const CATALOG: Catalog = {
   skus: [
@@ -124,6 +124,7 @@ describe("tags and the engine", () => {
       startWeek: "2026-W43",
       endWeek: "2026-W44",
       eventType: "competitor_scheme",
+      summary: "Competitor running a scheme on mango drinks.",
     });
   });
 });
@@ -133,5 +134,37 @@ describe("the schema sent to Gemini", () => {
     expect([...EVENT_JSON_SCHEMA.required].sort()).toEqual(Object.keys(EVENT_JSON_SCHEMA.properties).sort());
     expect(EVENT_JSON_SCHEMA.properties.startWeek.type).toEqual(["string", "null"]);
     expect(EVENT_JSON_SCHEMA.properties.eventType.enum).toContain("competitor_scheme");
+  });
+});
+
+describe("when a confirmed tag stops mattering", () => {
+  // as-of 2026-10-19: the baseline window is W31..W42, the last complete week is W42
+  const WINDOW_START = "2026-W31";
+  const LAST = "2026-W42";
+
+  it("a tag that ended before the window began is expired and stops routing SKUs", () => {
+    expect(tagIsRelevant({ endWeek: "2026-W25" }, WINDOW_START)).toBe(false);
+    expect(tagIsRelevant({ endWeek: "2026-W30" }, WINDOW_START)).toBe(false);
+  });
+
+  it("a tag touching the window is relevant, including one that ends on its first week", () => {
+    expect(tagIsRelevant({ endWeek: "2026-W31" }, WINDOW_START)).toBe(true);
+    expect(tagIsRelevant({ endWeek: "2026-W42" }, WINDOW_START)).toBe(true);
+  });
+
+  it("an upcoming tag (a scheme next week) is relevant", () => {
+    expect(tagIsRelevant({ endWeek: "2026-W44" }, WINDOW_START)).toBe(true);
+  });
+
+  it("labels the timing for display", () => {
+    expect(tagTiming({ startWeek: "2026-W20", endWeek: "2026-W25" }, WINDOW_START, LAST)).toBe("expired");
+    expect(tagTiming({ startWeek: "2026-W40", endWeek: "2026-W42" }, WINDOW_START, LAST)).toBe("current");
+    expect(tagTiming({ startWeek: "2026-W43", endWeek: "2026-W44" }, WINDOW_START, LAST)).toBe("upcoming");
+    expect(tagTiming({ startWeek: "2026-W41", endWeek: "2026-W44" }, WINDOW_START, LAST)).toBe("current"); // started, not finished
+  });
+
+  it("works across a year end", () => {
+    expect(tagIsRelevant({ endWeek: "2026-W53" }, "2026-W42")).toBe(true);
+    expect(tagIsRelevant({ endWeek: "2026-W52" }, "2027-W01")).toBe(false);
   });
 });

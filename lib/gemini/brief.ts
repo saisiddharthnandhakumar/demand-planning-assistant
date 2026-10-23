@@ -1,4 +1,3 @@
-import type { EventTagDraft } from "./events";
 import { EVENT_TYPE_LABEL } from "./events";
 import { MAX_BRIEF_WORDS, wordCount } from "./guardrail";
 import type { EdgeCode, EdgeReason, SkuMetrics } from "@/lib/engine/types";
@@ -32,7 +31,7 @@ export function buildBriefInput(args: {
   sku: BriefInput["sku"];
   metrics: SkuMetrics;
   edgeReasons: EdgeReason[];
-  tags: Pick<EventTagDraft, "eventType" | "summary" | "startWeek" | "endWeek">[];
+  tags: { eventType: string; summary: string; startWeek: string; endWeek: string }[];
   recentWeeks: number;
 }): BriefInput {
   const { metrics: m } = args;

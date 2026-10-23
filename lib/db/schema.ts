@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import type { EdgeReason, SkuMetrics } from "@/lib/engine/types";
+import type { EdgeReason, EventTag, SkuMetrics } from "@/lib/engine/types";
 import {
   bigint,
   boolean,
@@ -159,6 +159,8 @@ export const runs = pgTable(
     // Rules version and document used, so a run can always be explained later.
     rulesVersion: integer(),
     rulesSnapshot: jsonb(),
+    // The confirmed event tags that were active for this run, so it can be explained later.
+    eventsSnapshot: jsonb().$type<EventTag[]>().notNull().default(sql`'[]'::jsonb`),
   },
   (t) => [
     check("runs_trigger_chk", sql`${t.trigger} in ('cron', 'manual')`),
@@ -187,6 +189,10 @@ export const runItems = pgTable(
     isEdge: boolean().notNull().default(false),
     edgeReasons: jsonb().$type<EdgeReason[]>().notNull().default(sql`'[]'::jsonb`),
     edgeBrief: text(),
+    // "ai" when Gemini wrote it and it passed the guardrail, "template" otherwise.
+    edgeBriefSource: text().$type<"ai" | "template">(),
+    // Why the template was used (shown as a small "AI brief unavailable" note).
+    edgeBriefFallbackReason: text(),
     decisionStatus: text()
       .$type<"pending" | "approved" | "edited" | "rejected">()
       .notNull()

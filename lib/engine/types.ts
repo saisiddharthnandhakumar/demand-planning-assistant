@@ -41,6 +41,8 @@ export interface EventTag {
   startWeek: string; // inclusive, e.g. 2026-W40
   endWeek: string; // inclusive
   eventType?: string;
+  /** A short human description, shown in briefs and the UI. Never used for any decision. */
+  summary?: string;
 }
 
 export interface EngineInput {
