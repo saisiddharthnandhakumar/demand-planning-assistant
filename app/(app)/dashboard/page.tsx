@@ -128,7 +128,7 @@ export default async function DashboardPage() {
         </CardHeader>
         <CardContent>
           {orders.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No purchase orders yet. They appear here once the Zoho step is enabled and a run is submitted.</p>
+            <p className="text-sm text-muted-foreground">No purchase orders yet. They appear here when a run is submitted (as previews while Zoho is in dry-run mode).</p>
           ) : (
             <Table>
               <TableHeader>
@@ -151,8 +151,8 @@ export default async function DashboardPage() {
                       </Link>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={o.status === "failed" ? "destructive" : o.status === "created" ? "secondary" : "outline"}>
-                        {o.status === "dry_run" ? "Preview only" : o.status === "created" ? "Draft created" : "Failed"}
+                      <Badge variant={o.status === "failed" || o.status === "pending" ? "destructive" : o.status === "created" ? "secondary" : "outline"}>
+                        {o.status === "dry_run" ? "Preview only" : o.status === "created" ? "Draft created" : o.status === "pending" ? "Unclear: check Zoho" : "Failed"}
                       </Badge>
                     </TableCell>
                     <TableCell>

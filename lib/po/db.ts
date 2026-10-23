@@ -4,6 +4,7 @@ import { getSystemState } from "@/lib/db/queries";
 import { auditLog, purchaseOrders, runItems, runs, skus, skuVendorMap } from "@/lib/db/schema";
 import { todayInIst } from "@/lib/money";
 import { createZohoClient, readFallbackPurchaseRate, readZohoRuntime } from "@/lib/zoho";
+import { buildPurchaseOrders } from "./build";
 import { createPurchaseOrders, type CreatePosResult, type PoDeps, type PoStatus } from "./create";
 
 export function dbPoDeps(db: Db, env: Record<string, string | undefined> = process.env, fetchImpl?: typeof fetch): PoDeps {
@@ -124,4 +125,13 @@ export async function releasePendingPo(db: Db, args: { runId: string; vendor: st
   if (released.length !== 1) return { ok: false, error: "That order is not waiting on an unclear answer, so there is nothing to release." };
   await db.insert(auditLog).values({ actor: args.actor, action: "po.release", detail: { runId: args.runId, vendor: args.vendor } });
   return { ok: true };
+}
+
+/** What the run would order, computed from its final decisions (for showing skipped lines and the expected number of orders). */
+export async function planRunPurchaseOrders(db: Db, runId: string) {
+  const deps = dbPoDeps(db);
+  const run = await deps.getRun(runId);
+  if (!run) return null;
+  const [lines, vendorMap] = await Promise.all([deps.loadDecisions(runId), deps.loadVendorMap()]);
+  return buildPurchaseOrders({ runId, lines, vendorMap, date: deps.today(), approvedBy: run.submittedBy ?? "the planner", purchaseRate: deps.purchaseRate });
 }

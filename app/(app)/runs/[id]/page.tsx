@@ -9,6 +9,7 @@ import { getRuleSet, getRunDetail, getSystemState } from "@/lib/db/queries";
 import { toItemView } from "@/lib/runs/view";
 import { formatWhen } from "../../rules/format-when";
 import { StatusBadge } from "../status-badge";
+import { PurchaseOrders } from "./purchase-orders";
 import { ReviewPanel } from "./review-panel";
 import { SubmittedSummary } from "./submitted-summary";
 
@@ -54,6 +55,8 @@ export default async function RunPage({ params }: { params: Promise<{ id: string
       {run.status === "submitted" && (
         <SubmittedSummary items={views} submittedBy={run.submittedBy} submittedAt={run.submittedAt} killThreshold={current.kill.override_rate_threshold} />
       )}
+
+      {run.status === "submitted" && <PurchaseOrders runId={run.id} paused={state.paused} />}
 
       {views.length > 0 && (
         <ReviewPanel

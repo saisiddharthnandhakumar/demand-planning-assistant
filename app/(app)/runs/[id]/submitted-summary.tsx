@@ -48,9 +48,6 @@ export function SubmittedSummary({ items, submittedBy, submittedAt, killThreshol
             {units.toLocaleString("en-IN")} units in total, including {p.edgeTotal} judgment decision{p.edgeTotal === 1 ? "" : "s"}
           </div>
         </div>
-        <p className="text-xs text-muted-foreground sm:col-span-3">
-          Draft purchase orders in Zoho are created by a later step that is not enabled in this build yet.
-        </p>
       </CardContent>
     </Card>
   );
