@@ -22,6 +22,13 @@
       "when": 1792737556182,
       "tag": "0002_early_psylocke",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792738837566,
+      "tag": "0003_fair_abomination",
+      "breakpoints": true
     }
   ]
 }

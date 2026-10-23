@@ -242,19 +242,27 @@ export const purchaseOrders = pgTable(
     vendorName: text(),
     zohoPoId: text(),
     zohoPoUrl: text(),
+    // pending: a Zoho call was started (or its outcome is unknown); dry_run: preview only;
+    // created: Zoho made a draft; failed: nothing was created, safe to retry.
     status: text()
-      .$type<"dry_run" | "created" | "failed">()
+      .$type<"pending" | "dry_run" | "created" | "failed">()
       .notNull(),
     payload: jsonb().notNull(),
+    // The order lines as the planner sees them (SKU, name, Zoho item, quantity).
+    lines: jsonb().$type<{ skuId: string; skuName?: string; itemId: string; quantity: number }[]>().notNull().default(sql`'[]'::jsonb`),
     response: jsonb(),
+    error: text(),
+    // Set when Zoho returned a status other than Draft.
+    warning: text(),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
     // One PO per vendor per run: a double-click or retry cannot duplicate.
     unique("purchase_orders_run_vendor_uq").on(t.runId, t.vendor),
     check(
       "purchase_orders_status_chk",
-      sql`${t.status} in ('dry_run', 'created', 'failed')`,
+      sql`${t.status} in ('pending', 'dry_run', 'created', 'failed')`,
     ),
   ],
 );
