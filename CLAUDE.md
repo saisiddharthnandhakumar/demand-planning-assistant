@@ -57,6 +57,10 @@ Next.js (App Router, TypeScript), Tailwind + shadcn/ui, Recharts, Neon Postgres 
 - Item writes are guarded in SQL by "run is open", so a submitted run cannot change even if a request races the submit. Submit is optimistic: the rate is computed in TS (`lib/override-rate.ts`) and the UPDATE only commits if the counts it was computed from still hold.
 - `runs.override_rate` is stored rounded to 4 decimals. The kill switch (M6) must decide a breach from the run's items (`overrideRate(items) > threshold`), not from the rounded stored value.
 
+- The kill switch rules live twice: pure `nextKillState` (lib/killswitch.ts) and SQL `killSwitchCtes` (lib/runs/kill-sql.ts), embedded in the submit statement so evaluation is atomic with submitting. Change both together; `tests/killswitch-sql.integration.test.ts` (opt-in, needs TEST_DATABASE_URL) fails if they drift.
+- "use server" files may export only async functions: put constants in lib/.
+- Quarters on the money card are calendar quarters, labelled with their months. "Rs vs last quarter" = last total minus this total (positive is better).
+
 ## Workflow
 
 Built in milestones M0-M10. Finish one, run its tests, show the results, wait for the go-ahead before the next.

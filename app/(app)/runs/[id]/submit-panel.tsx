@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { breachWarning, formatPct } from "@/lib/killswitch";
 import { overrideRate, reviewProgress, submitBlocker } from "@/lib/override-rate";
 import type { RunItemView } from "@/lib/runs/view";
 import { submitAction } from "./actions";
@@ -17,12 +18,16 @@ export function SubmitPanel({
   runId,
   items,
   killThreshold,
+  killRuns,
+  killStreak,
   pausedReason,
   paused,
 }: {
   runId: string;
   items: RunItemView[];
   killThreshold: number;
+  killRuns: number;
+  killStreak: number;
   paused: boolean;
   pausedReason: string | null;
 }) {
@@ -35,7 +40,7 @@ export function SubmitPanel({
   const rate = overrideRate(items);
   const overridden = progress.engineEdited + progress.engineRejected;
   const nameMissing = name.trim() === "";
-  const overThreshold = rate !== null && rate > killThreshold;
+  const warning = progress.pendingEngine === 0 ? breachWarning({ rate, threshold: killThreshold, consecutiveRuns: killRuns, currentStreak: killStreak }) : null;
 
   return (
     <Card>
@@ -60,12 +65,10 @@ export function SubmitPanel({
             Override rate for this run: <strong>{pct1(rate)}</strong> ({overridden} of {progress.engineTotal} engine decisions edited or rejected).
           </p>
         )}
-        {overThreshold && progress.pendingEngine === 0 && (
+        {warning && (
           <Alert variant="destructive">
-            <AlertTitle>Above the kill-switch limit</AlertTitle>
-            <AlertDescription>
-              This rate is above {pct1(killThreshold)}. If a second run in a row is also above the limit, the system pauses itself.
-            </AlertDescription>
+            <AlertTitle>Above the kill-switch limit ({formatPct(killThreshold)})</AlertTitle>
+            <AlertDescription>{warning}</AlertDescription>
           </Alert>
         )}
 

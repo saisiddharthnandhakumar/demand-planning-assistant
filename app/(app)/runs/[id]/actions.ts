@@ -20,6 +20,11 @@ function refresh(runId: string) {
   revalidatePath("/runs");
 }
 
+/** The pause banner lives in the shared layout, so a submit that may pause the system refreshes every page. */
+function refreshEverything() {
+  revalidatePath("/", "layout");
+}
+
 /** Approve, edit, reject or clear one engine decision, or decide one edge SKU. */
 export async function decideAction(runId: string, skuId: string, input: DecisionInput): Promise<ActionResult> {
   await requireAuth();
@@ -53,5 +58,11 @@ export async function submitAction(runId: string, name: string): Promise<ActionR
   const result = await submitRun(getDb(), { runId, submittedBy: parsedName.data });
   if (!result.ok) return result;
   refresh(runId);
-  return { ok: true, message: "Run submitted and locked." };
+  refreshEverything();
+  return {
+    ok: true,
+    message: result.kill.justPaused
+      ? `Run submitted and locked. This was run ${result.kill.consecutiveBreaches} in a row above the override limit, so the system has paused itself.`
+      : "Run submitted and locked.",
+  };
 }

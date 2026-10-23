@@ -61,6 +61,8 @@ export default async function RunPage({ params }: { params: Promise<{ id: string
           items={views}
           editable={run.status === "open"}
           killThreshold={current.kill.override_rate_threshold}
+          killRuns={current.kill.consecutive_runs}
+          killStreak={state.consecutiveBreaches}
           recentWeeks={recentWeeks}
           paused={state.paused}
           pausedReason={state.reason}

@@ -1,9 +1,11 @@
 import { and, count, eq, exists, sql } from "drizzle-orm";
 import type { Db } from "@/lib/db";
-import { getSystemState } from "@/lib/db/queries";
+import { getRuleSet, getSystemState } from "@/lib/db/queries";
 import { runItems, runs } from "@/lib/db/schema";
 import { buildDecision, decisionInputSchema, type DecisionInput } from "@/lib/decisions";
+import { verdictFor } from "@/lib/killswitch";
 import { overrideRate, reviewProgress, submitBlocker } from "@/lib/override-rate";
+import { killSwitchCtes } from "./kill-sql";
 
 export type DbResult<T = object> =
   | ({ ok: true } & T)
@@ -108,14 +110,19 @@ export async function bulkApproveUntouched(db: Db, runId: string, expectedCount:
   return { ok: true, approved: Number(result.rows[0]?.n ?? 0) };
 }
 
-export type SubmitOutcome = { overrideRate: number | null; skus: number };
+export type SubmitOutcome = {
+  overrideRate: number | null;
+  skus: number;
+  kill: { verdict: "breach" | "clean" | "no_data"; consecutiveBreaches: number; paused: boolean; justPaused: boolean };
+};
 
 /**
  * Submits and locks a run. Refuses unless the system is running and every SKU,
  * engine and edge, has an explicit decision. The override rate is computed
  * here from the decisions read, and the write only commits if those same
  * decisions are still in place (optimistic check), so the stored rate always
- * matches what was submitted.
+ * matches what was submitted. The kill switch is evaluated in the SAME
+ * statement, so a submitted run is always counted, exactly once.
  */
 export async function submitRun(db: Db, args: { runId: string; submittedBy: string }): Promise<DbResult<SubmitOutcome>> {
   const [run] = await db.select().from(runs).where(eq(runs.id, args.runId));
@@ -140,6 +147,13 @@ export async function submitRun(db: Db, args: { runId: string; submittedBy: stri
 
   const rate = overrideRate(items);
   const overridden = progress.engineEdited + progress.engineRejected;
+  const killRules = (await getRuleSet(db)).kill;
+  const verdict = verdictFor(rate, killRules.override_rate_threshold);
+  const kill = killSwitchCtes({
+    verdict,
+    runId: args.runId,
+    config: { threshold: killRules.override_rate_threshold, consecutiveRuns: killRules.consecutive_runs },
+  });
   const result = await db.execute(sql`
     with sub as (
       update runs
@@ -161,11 +175,27 @@ export async function submitRun(db: Db, args: { runId: string; submittedBy: stri
                                 'judgmentDecisions', ${progress.edgeTotal}::int)
       from sub
       returning 1
-    )
-    select (select id from sub) as id
+    ),
+    ${kill}
+    select (select id from sub) as id,
+           (select now_paused from ks) as paused,
+           (select was_paused from ks) as was_paused,
+           (select consecutive_breaches from ks) as consecutive_breaches
   `);
   if (!result.rows[0]?.id) {
     return { ok: false, error: "The decisions changed while you were submitting, or the run was already submitted. Reload and check them, then submit again." };
   }
-  return { ok: true, overrideRate: rate, skus: items.length };
+  const row = result.rows[0];
+  const paused = Boolean(row.paused);
+  return {
+    ok: true,
+    overrideRate: rate,
+    skus: items.length,
+    kill: {
+      verdict,
+      consecutiveBreaches: Number(row.consecutive_breaches ?? 0),
+      paused,
+      justPaused: paused && !row.was_paused,
+    },
+  };
 }

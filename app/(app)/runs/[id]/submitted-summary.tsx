@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { isOrderAction } from "@/lib/decisions";
+import { formatPct } from "@/lib/killswitch";
 import { overrideRate, reviewProgress } from "@/lib/override-rate";
 import type { RunItemView } from "@/lib/runs/view";
 import { formatWhen } from "../../rules/format-when";
@@ -37,7 +38,7 @@ export function SubmittedSummary({ items, submittedBy, submittedAt, killThreshol
           <div className="text-xs text-muted-foreground">
             {rate === null
               ? "No engine decisions in this run"
-              : `${overridden} of ${p.engineTotal} · limit ${pct1(killThreshold)}${rate > killThreshold ? " (above)" : ""}`}
+              : `${overridden} of ${p.engineTotal} · limit ${formatPct(killThreshold)}${rate > killThreshold ? " (above)" : ""}`}
           </div>
         </div>
         <div>

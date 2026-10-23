@@ -15,6 +15,8 @@ export function ReviewPanel({
   items,
   editable,
   killThreshold,
+  killRuns,
+  killStreak,
   recentWeeks,
   paused,
   pausedReason,
@@ -23,6 +25,8 @@ export function ReviewPanel({
   items: RunItemView[];
   editable: boolean;
   killThreshold: number;
+  killRuns: number;
+  killStreak: number;
   recentWeeks: number;
   paused: boolean;
   pausedReason: string | null;
@@ -74,7 +78,7 @@ export function ReviewPanel({
       </Tabs>
 
       {editable && (
-        <SubmitPanel runId={runId} items={items} killThreshold={killThreshold} paused={paused} pausedReason={pausedReason} />
+        <SubmitPanel runId={runId} items={items} killThreshold={killThreshold} killRuns={killRuns} killStreak={killStreak} paused={paused} pausedReason={pausedReason} />
       )}
     </div>
   );
