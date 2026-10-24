@@ -65,6 +65,7 @@ export default async function DashboardPage() {
           value={String(awaiting.length)}
           note={awaiting.length === 0 ? "Nothing open" : awaiting.length === 1 ? "Open run" : "Open runs"}
           href={awaiting[0] ? `/runs/${awaiting[0].id}` : "/runs"}
+          tone={awaiting.length > 0 ? "accent" : undefined}
         />
         <Figure
           label="Last override rate"
@@ -76,7 +77,7 @@ export default async function DashboardPage() {
           label="Kill switch"
           value={state.paused ? "Paused" : "Running"}
           note={`Streak ${state.consecutiveBreaches} of ${rules.kill.consecutive_runs}`}
-          tone={state.paused ? "bad" : undefined}
+          tone={state.paused ? "bad" : "good"}
         />
         <Figure
           label="Draft purchase orders"
@@ -209,11 +210,11 @@ export default async function DashboardPage() {
 }
 
 /** A key figure set as type, not a tile: label, one large number, one line saying what it is measured against. */
-function Figure({ label, value, note, href, tone }: { label: string; value: string; note: string; href?: string; tone?: "bad" }) {
+function Figure({ label, value, note, href, tone }: { label: string; value: string; note: string; href?: string; tone?: "bad" | "good" | "accent" }) {
   const body = (
     <div className="flex h-full flex-col gap-1 p-5">
       <p className="text-sm text-muted-foreground">{label}</p>
-      <p className={`figure text-3xl font-medium tracking-tight ${tone === "bad" ? "text-[var(--negative)]" : ""}`}>{value}</p>
+      <p className={`figure text-3xl font-medium tracking-tight ${tone === "bad" ? "text-[var(--negative)]" : tone === "good" ? "text-[var(--positive)]" : tone === "accent" ? "text-primary" : ""}`}>{value}</p>
       <p className="text-xs text-muted-foreground">{note}</p>
     </div>
   );

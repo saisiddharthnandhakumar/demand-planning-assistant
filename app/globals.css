@@ -49,55 +49,57 @@
 }
 
 :root {
-  /* Achromatic ledger: chrome is ink on a blue-grey ground; colour only marks data and flags. */
-  --background: #f2f4f7;
-  --foreground: #0a0a0a;
-  --card: #ffffff;
-  --card-foreground: #0a0a0a;
-  --popover: #ffffff;
-  --popover-foreground: #0a0a0a;
-  --primary: #141414;
-  --primary-foreground: #fafafa;
-  --secondary: #e9ecf0;
-  --secondary-foreground: #141414;
-  --muted: #eceff3;
-  --muted-foreground: #5f6670;
-  --accent: #e9ecf0;
-  --accent-foreground: #141414;
-  --destructive: #c4242a;
-  --border: #e1e5ea;
-  --input: #d3d8df;
-  --ring: #1d5fbf;
-  --chart-1: #141414;
-  --chart-2: #8a9099;
-  --chart-3: #1d5fbf;
-  --chart-4: #c4242a;
-  --chart-5: #b9bfc8;
+  /* Night ledger: deep blue-black ground, one teal accent for actions and selection,
+     brighter status colours. Flat surfaces: depth comes from a step in tone, never a shadow. */
+  color-scheme: dark;
+  --background: #0a0e14;
+  --foreground: #e8edf4;
+  --card: #111822;
+  --card-foreground: #e8edf4;
+  --popover: #151d29;
+  --popover-foreground: #e8edf4;
+  --primary: #2dd4bf;
+  --primary-foreground: #04201c;
+  --secondary: #1a2330;
+  --secondary-foreground: #e8edf4;
+  --muted: #161e2a;
+  --muted-foreground: #8e9aab;
+  --accent: #1a2330;
+  --accent-foreground: #e8edf4;
+  --destructive: #ff7a7a;
+  --border: #1f2937;
+  --input: #2a3545;
+  --ring: #2dd4bf;
+  --chart-1: #2dd4bf;
+  --chart-2: #8e9aab;
+  --chart-3: #5aa9ff;
+  --chart-4: #ff7a7a;
+  --chart-5: #3a4657;
   --radius: 0.5rem;
-  --sidebar: #f2f4f7;
-  --sidebar-foreground: #0a0a0a;
-  --sidebar-primary: #141414;
-  --sidebar-primary-foreground: #fafafa;
-  --sidebar-accent: #e4e8ed;
-  --sidebar-accent-foreground: #0a0a0a;
-  --sidebar-border: #e1e5ea;
-  --sidebar-ring: #1d5fbf;
+  --sidebar: #0a0e14;
+  --sidebar-foreground: #e8edf4;
+  --sidebar-primary: #2dd4bf;
+  --sidebar-primary-foreground: #04201c;
+  --sidebar-accent: #14323a;
+  --sidebar-accent-foreground: #7ff0df;
+  --sidebar-border: #1f2937;
+  --sidebar-ring: #2dd4bf;
 
-  /* Status marks (flags, run states). Pale fill, dark ink; never a coloured card. */
-  --signal: #1d5fbf;
-  --positive: #2e7d32;
-  --negative: #c4242a;
-  --warning: #92400e;
-  --pill-positive-bg: #dcfae5;
-  --pill-positive-ink: #04250e;
-  --pill-negative-bg: #ffedea;
-  --pill-negative-ink: #831c1e;
-  --pill-warning-bg: #fff4d6;
-  --pill-warning-ink: #7a3a0b;
-  --pill-info-bg: #e6eefb;
-  --pill-info-ink: #14407f;
-  --pill-neutral-bg: #eceff3;
-  --pill-neutral-ink: #3d434c;
+  /* Status marks (flags, run states): a deep tint with a bright ink. */
+  --signal: #2dd4bf;
+  --positive: #4ade80;
+  --negative: #ff7a7a;
+  --warning: #fbbf24;
+  --pill-positive-bg: #0f2e22;
+  --pill-positive-ink: #6ee7a8;
+  --pill-negative-bg: #34161a;
+  --pill-negative-ink: #ffa3a3;
+  --pill-warning-bg: #33280f;
+  --pill-warning-ink: #f8cb6a;
+  --pill-info-bg: #102a44;
+  --pill-info-ink: #8fc6ff;
+  --pill-neutral-bg: #1c2532;
+  --pill-neutral-ink: #b4bfce;
 }
 
 .dark {
