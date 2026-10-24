@@ -47,17 +47,46 @@ export default async function DashboardPage() {
       };
     });
   const flagRuns = stats.filter((s) => s.items > 0).slice(0, 10);
+  const awaiting = stats.filter((s) => s.status === "open");
+  const latest = points.at(-1);
+  const draftCount = orders.filter((o) => o.status === "created").length;
+  const previewCount = orders.filter((o) => o.status === "dry_run").length;
 
   return (
     <div className="space-y-8">
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+        <h1 className="text-2xl font-medium tracking-tight">Dashboard</h1>
         <p className="text-sm text-muted-foreground">How the system is behaving, and whether it is paying off.</p>
       </div>
 
-      <KillSwitchCard state={state} kill={rules.kill} showManageLink />
+      <section aria-label="Key figures" className="grid grid-cols-2 divide-x divide-y divide-border overflow-hidden rounded-lg border bg-card lg:grid-cols-4 lg:divide-y-0">
+        <Figure
+          label="Awaiting your review"
+          value={String(awaiting.length)}
+          note={awaiting.length === 0 ? "Nothing open" : awaiting.length === 1 ? "Open run" : "Open runs"}
+          href={awaiting[0] ? `/runs/${awaiting[0].id}` : "/runs"}
+        />
+        <Figure
+          label="Last override rate"
+          value={latest ? `${latest.rate.toFixed(1)}%` : "—"}
+          note={latest ? `${latest.breach ? "Above" : "Within"} the ${Math.round(threshold * 1000) / 10}% limit` : "No submitted run yet"}
+          tone={latest?.breach ? "bad" : undefined}
+        />
+        <Figure
+          label="Kill switch"
+          value={state.paused ? "Paused" : "Running"}
+          note={`Streak ${state.consecutiveBreaches} of ${rules.kill.consecutive_runs}`}
+          tone={state.paused ? "bad" : undefined}
+        />
+        <Figure
+          label="Draft purchase orders"
+          value={String(draftCount)}
+          note={previewCount > 0 ? `${previewCount} preview${previewCount === 1 ? "" : "s"} only (dry-run)` : "In Zoho, not sent"}
+        />
+      </section>
 
-      <Card>
+      <div className="grid gap-4 lg:grid-cols-3">
+      <Card className="lg:col-span-2">
         <CardHeader>
           <CardTitle>Override rate per run</CardTitle>
           <CardDescription>
@@ -72,6 +101,8 @@ export default async function DashboardPage() {
           )}
         </CardContent>
       </Card>
+      <KillSwitchCard state={state} kill={rules.kill} showManageLink />
+      </div>
 
       <Card>
         <CardHeader>
@@ -108,11 +139,11 @@ export default async function DashboardPage() {
                     <TableCell>
                       <StatusBadge status={r.status} />
                     </TableCell>
-                    <TableCell className="text-right tabular-nums">{r.stockout}</TableCell>
-                    <TableCell className="text-right tabular-nums">{r.overstock}</TableCell>
-                    <TableCell className="text-right tabular-nums">{r.highDemand}</TableCell>
-                    <TableCell className="text-right tabular-nums">{r.noAction}</TableCell>
-                    <TableCell className="text-right tabular-nums">{r.edge}</TableCell>
+                    <TableCell className="figure text-right">{r.stockout}</TableCell>
+                    <TableCell className="figure text-right">{r.overstock}</TableCell>
+                    <TableCell className="figure text-right">{r.highDemand}</TableCell>
+                    <TableCell className="figure text-right">{r.noAction}</TableCell>
+                    <TableCell className="figure text-right">{r.edge}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -146,12 +177,12 @@ export default async function DashboardPage() {
                     <TableCell className="whitespace-normal">{formatWhen(o.createdAt)}</TableCell>
                     <TableCell className="whitespace-normal">{o.vendorName ?? o.vendor}</TableCell>
                     <TableCell>
-                      <Link href={`/runs/${o.runId}`} className="underline-offset-4 hover:underline">
+                      <Link href={`/runs/${o.runId}`} className="figure text-[13px] underline-offset-4 hover:underline">
                         {o.runId.slice(0, 8)}
                       </Link>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={o.status === "failed" || o.status === "pending" ? "destructive" : o.status === "created" ? "secondary" : "outline"}>
+                      <Badge variant={o.status === "failed" ? "danger" : o.status === "pending" ? "warning" : o.status === "created" ? "success" : "neutral"}>
                         {o.status === "dry_run" ? "Preview only" : o.status === "created" ? "Draft created" : o.status === "pending" ? "Unclear: check Zoho" : "Failed"}
                       </Badge>
                     </TableCell>
@@ -174,5 +205,23 @@ export default async function DashboardPage() {
 
       <MoneyCard current={quarterOfDate(todayInIst(new Date()))} baselines={baselines} />
     </div>
+  );
+}
+
+/** A key figure set as type, not a tile: label, one large number, one line saying what it is measured against. */
+function Figure({ label, value, note, href, tone }: { label: string; value: string; note: string; href?: string; tone?: "bad" }) {
+  const body = (
+    <div className="flex h-full flex-col gap-1 p-5">
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <p className={`figure text-3xl font-medium tracking-tight ${tone === "bad" ? "text-[var(--negative)]" : ""}`}>{value}</p>
+      <p className="text-xs text-muted-foreground">{note}</p>
+    </div>
+  );
+  return href ? (
+    <Link href={href} className="block transition-colors hover:bg-muted/50">
+      {body}
+    </Link>
+  ) : (
+    body
   );
 }

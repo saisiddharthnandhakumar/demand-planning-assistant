@@ -16,7 +16,7 @@ export interface OverridePoint {
 /**
  * Override rate per submitted run, with the kill-switch limit as a reference
  * line. One series, so no legend: the heading names it. Bars above the limit use
- * the destructive colour AND say "above limit" in the tooltip, the label rule
+ * the negative colour AND say "above limit" in the tooltip, the label rule
  * below and the table view, so colour is never the only cue.
  */
 export function OverrideChart({ points, limitPct }: { points: OverridePoint[]; limitPct: number }) {
@@ -43,7 +43,7 @@ export function OverrideChart({ points, limitPct }: { points: OverridePoint[]; l
             <ReferenceLine y={limitPct} stroke="var(--muted-foreground)" strokeDasharray="5 4" label={{ value: `${limitPct}% limit`, position: "insideTopRight", fontSize: 12, fill: "var(--muted-foreground)" }} />
             <Bar dataKey="rate" radius={[4, 4, 0, 0]} maxBarSize={56} isAnimationActive={false}>
               {points.map((p) => (
-                <Cell key={p.id} fill={p.breach ? "var(--destructive)" : "var(--primary)"} />
+                <Cell key={p.id} fill={p.breach ? "var(--negative)" : "var(--signal)"} />
               ))}
               <LabelList dataKey="rate" position="top" formatter={(v) => `${Number(v).toFixed(1)}%`} style={{ fontSize: 11, fill: "var(--foreground)" }} />
             </Bar>
@@ -51,7 +51,7 @@ export function OverrideChart({ points, limitPct }: { points: OverridePoint[]; l
         </ResponsiveContainer>
       </div>
       <figcaption className="text-xs text-muted-foreground">
-        Red bars are above the {limitPct}% limit. Override rate = edited or rejected engine decisions ÷ all engine decisions in the run (SKUs routed to the planner are excluded).
+        Red bars are above the {limitPct}% limit; blue bars are within it. Override rate = edited or rejected engine decisions ÷ all engine decisions in the run (SKUs routed to the planner are excluded).
       </figcaption>
       <details className="text-sm">
         <summary className="cursor-pointer text-muted-foreground">Show as a table</summary>
@@ -68,12 +68,12 @@ export function OverrideChart({ points, limitPct }: { points: OverridePoint[]; l
           <tbody>
             {points.map((p) => (
               <tr key={p.id} className="border-b last:border-0">
-                <td className="py-1 pr-4">{p.id.slice(0, 8)}</td>
+                <td className="figure py-1 pr-4">{p.id.slice(0, 8)}</td>
                 <td className="py-1 pr-4">{p.label}</td>
                 <td className="py-1 pr-4">
                   {p.overridden} of {p.engineTotal}
                 </td>
-                <td className="py-1 pr-4 tabular-nums">{p.rate.toFixed(1)}%</td>
+                <td className="figure py-1 pr-4">{p.rate.toFixed(1)}%</td>
                 <td className="py-1">{p.breach ? "Above limit" : "Within limit"}</td>
               </tr>
             ))}

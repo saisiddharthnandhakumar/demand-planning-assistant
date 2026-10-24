@@ -19,7 +19,7 @@ export default async function RunsPage() {
   return (
     <div className="space-y-8">
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Runs</h1>
+        <h1 className="text-2xl font-medium tracking-tight">Runs</h1>
         <p className="text-sm text-muted-foreground">
           Each run applies the current rules to the latest data and waits here for review.
         </p>
@@ -59,12 +59,12 @@ export default async function RunsPage() {
                       )}
                     </TableCell>
                     <TableCell className="capitalize">{r.trigger}</TableCell>
-                    <TableCell>{r.asOfDate ?? "—"}</TableCell>
+                    <TableCell className="figure text-[13px]">{r.asOfDate ?? "—"}</TableCell>
                     <TableCell>
                       <StatusBadge status={r.status} />
                     </TableCell>
-                    <TableCell className="text-right">{r.items || "—"}</TableCell>
-                    <TableCell className="text-right">{r.items ? r.edge : "—"}</TableCell>
+                    <TableCell className="figure text-right">{r.items || "—"}</TableCell>
+                    <TableCell className="figure text-right">{r.items ? r.edge : "—"}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

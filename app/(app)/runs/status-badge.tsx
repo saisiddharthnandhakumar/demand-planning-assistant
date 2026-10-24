@@ -9,11 +9,11 @@ const LABEL: Record<Status, string> = {
   failed: "Failed",
 };
 
-const VARIANT: Record<Status, "default" | "secondary" | "destructive" | "outline"> = {
-  open: "default",
-  submitted: "secondary",
-  skipped: "outline",
-  failed: "destructive",
+const VARIANT: Record<Status, "info" | "success" | "neutral" | "danger"> = {
+  open: "info",
+  submitted: "success",
+  skipped: "neutral",
+  failed: "danger",
 };
 
 export function StatusBadge({ status }: { status: Status }) {

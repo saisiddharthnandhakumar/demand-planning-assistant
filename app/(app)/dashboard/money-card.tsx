@@ -57,7 +57,7 @@ export function MoneyCard({ current, baselines }: { current: Quarter; baselines:
             <div className="text-xs text-muted-foreground">Rs vs last quarter</div>
             {comparison.status === "ok" ? (
               <>
-                <div className="text-2xl font-semibold tabular-nums">
+                <div className="figure text-2xl font-medium">
                   {comparison.diff > 0 ? "+" : comparison.diff < 0 ? "−" : ""}
                   {formatInr(Math.abs(comparison.diff))}
                 </div>
@@ -70,7 +70,7 @@ export function MoneyCard({ current, baselines }: { current: Quarter; baselines:
               </>
             ) : (
               <>
-                <div className="text-2xl font-semibold text-muted-foreground">—</div>
+                <div className="text-2xl font-medium text-muted-foreground">—</div>
                 <div className="text-xs text-muted-foreground">
                   Enter {comparison.missing.map((m) => (m === "last" ? `last quarter (${quarterLabel(last)})` : `this quarter (${quarterLabel(current)})`)).join(" and ")} to compare.
                 </div>
@@ -78,7 +78,7 @@ export function MoneyCard({ current, baselines }: { current: Quarter; baselines:
             )}
           </div>
         </div>
-        <p className="rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">
+        <p className="rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">
           Note: Oct–Dec contains festival months (October and November), so comparing it with the quarter before is seasonal, not like for like. Quarters here are calendar quarters (Oct–Dec is Q4).
         </p>
         <div className="border-t pt-4">
@@ -98,14 +98,14 @@ function QuarterBlock({ title, quarter, loss }: { title: string; quarter: Quarte
       </div>
       {loss ? (
         <>
-          <div className="text-2xl font-semibold tabular-nums">{formatInr(totalLoss(loss))}</div>
+          <div className="figure text-2xl font-medium">{formatInr(totalLoss(loss))}</div>
           <div className="text-xs text-muted-foreground">
             Stockouts {formatInr(loss.stockoutLossInr)} · write-offs {formatInr(loss.writeoffLossInr)}
           </div>
         </>
       ) : (
         <>
-          <div className="text-2xl font-semibold text-muted-foreground">Not entered</div>
+          <div className="text-2xl font-medium text-muted-foreground">Not entered</div>
           <div className="text-xs text-muted-foreground">Use the form below.</div>
         </>
       )}

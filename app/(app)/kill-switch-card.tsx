@@ -20,7 +20,7 @@ export function KillSwitchCard({
       <CardHeader>
         <CardTitle className="flex items-center gap-3">
           Kill switch
-          <Badge variant={state.paused ? "destructive" : "secondary"}>{state.paused ? "Paused" : "Running"}</Badge>
+          <Badge variant={state.paused ? "danger" : "success"}>{state.paused ? "Paused" : "Running"}</Badge>
         </CardTitle>
         <CardDescription>
           The system pauses itself when {kill.consecutive_runs} submitted run{kill.consecutive_runs === 1 ? "" : "s"} in a row have an

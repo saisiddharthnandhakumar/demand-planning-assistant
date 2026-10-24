@@ -20,7 +20,7 @@ export default async function SettingsPage() {
   return (
     <div className="space-y-8">
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
+        <h1 className="text-2xl font-medium tracking-tight">Settings</h1>
         <p className="text-sm text-muted-foreground">The kill switch, how to resume it, and the audit trail. Thresholds are edited under Rules.</p>
       </div>
 

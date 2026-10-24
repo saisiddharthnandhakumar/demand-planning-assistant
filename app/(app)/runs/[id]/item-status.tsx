@@ -10,11 +10,11 @@ const LABEL: Record<DecisionStatus, string> = {
   rejected: "Rejected",
 };
 
-const VARIANT: Record<DecisionStatus, "default" | "secondary" | "destructive" | "outline"> = {
-  pending: "outline",
-  approved: "secondary",
-  edited: "default",
-  rejected: "destructive",
+const VARIANT: Record<DecisionStatus, "neutral" | "success" | "info" | "danger"> = {
+  pending: "neutral",
+  approved: "success",
+  edited: "info",
+  rejected: "danger",
 };
 
 /** Status badge plus, for anything decided, what was finally decided and why. */

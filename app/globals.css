@@ -49,38 +49,55 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* Achromatic ledger: chrome is ink on a blue-grey ground; colour only marks data and flags. */
+  --background: #f2f4f7;
+  --foreground: #0a0a0a;
+  --card: #ffffff;
+  --card-foreground: #0a0a0a;
+  --popover: #ffffff;
+  --popover-foreground: #0a0a0a;
+  --primary: #141414;
+  --primary-foreground: #fafafa;
+  --secondary: #e9ecf0;
+  --secondary-foreground: #141414;
+  --muted: #eceff3;
+  --muted-foreground: #5f6670;
+  --accent: #e9ecf0;
+  --accent-foreground: #141414;
+  --destructive: #c4242a;
+  --border: #e1e5ea;
+  --input: #d3d8df;
+  --ring: #1d5fbf;
+  --chart-1: #141414;
+  --chart-2: #8a9099;
+  --chart-3: #1d5fbf;
+  --chart-4: #c4242a;
+  --chart-5: #b9bfc8;
+  --radius: 0.5rem;
+  --sidebar: #f2f4f7;
+  --sidebar-foreground: #0a0a0a;
+  --sidebar-primary: #141414;
+  --sidebar-primary-foreground: #fafafa;
+  --sidebar-accent: #e4e8ed;
+  --sidebar-accent-foreground: #0a0a0a;
+  --sidebar-border: #e1e5ea;
+  --sidebar-ring: #1d5fbf;
+
+  /* Status marks (flags, run states). Pale fill, dark ink; never a coloured card. */
+  --signal: #1d5fbf;
+  --positive: #2e7d32;
+  --negative: #c4242a;
+  --warning: #92400e;
+  --pill-positive-bg: #dcfae5;
+  --pill-positive-ink: #04250e;
+  --pill-negative-bg: #ffedea;
+  --pill-negative-ink: #831c1e;
+  --pill-warning-bg: #fff4d6;
+  --pill-warning-ink: #7a3a0b;
+  --pill-info-bg: #e6eefb;
+  --pill-info-ink: #14407f;
+  --pill-neutral-bg: #eceff3;
+  --pill-neutral-ink: #3d434c;
 }
 
 .dark {
@@ -123,8 +140,19 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "tnum" 1, "cv11" 1;
+  }
+  h1, h2, h3 {
+    text-wrap: balance;
   }
   html {
     @apply font-sans;
   }
+}
+
+/* Figures read as a ledger: Geist Mono, tabular, for counts, money, ids and keys only. */
+@utility figure {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
 }

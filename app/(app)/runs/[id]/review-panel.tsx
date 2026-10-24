@@ -38,14 +38,14 @@ export function ReviewPanel({
   return (
     <div className="space-y-6">
       <Tabs defaultValue="engine">
-        <TabsList className="h-auto">
-          <TabsTrigger value="engine" className="px-3 py-1.5">
+        <TabsList variant="line" className="h-auto w-full justify-start gap-6 border-b border-border pb-0">
+          <TabsTrigger value="engine" className="flex-none px-0 pb-2.5">
             Engine decisions
-            <Badge variant="outline">{editable ? `${progress.engineDecided}/${engine.length}` : engine.length}</Badge>
+            <Badge variant="neutral" className="figure">{editable ? `${progress.engineDecided}/${engine.length}` : engine.length}</Badge>
           </TabsTrigger>
-          <TabsTrigger value="edge" className="px-3 py-1.5">
+          <TabsTrigger value="edge" className="flex-none px-0 pb-2.5">
             Needs your judgment
-            <Badge variant={editable && progress.pendingEdge > 0 ? "default" : "outline"}>
+            <Badge variant={editable && progress.pendingEdge > 0 ? "warning" : "neutral"}>
               {editable ? `${progress.edgeDecided}/${edge.length}` : edge.length}
             </Badge>
           </TabsTrigger>

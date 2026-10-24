@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { formatWhen } from "./rules/format-when";
 
-/** Red banner shown on every page while the system is paused. Not dismissible: the pause is the point. */
+/** Banner shown on every page while the system is paused. Not dismissible: the pause is the point. */
 export function PauseBanner({ reason, since, runIds }: { reason: string | null; since: Date | null; runIds: string[] }) {
   return (
-    <div role="alert" className="border-b border-destructive/30 bg-destructive text-white">
-      <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2.5 text-sm">
-        <strong className="font-semibold">System paused</strong>
+    <div role="alert" className="rounded-lg border border-[var(--negative)]/25 border-l-[3px] border-l-[var(--negative)] bg-[var(--pill-negative-bg)] text-[var(--pill-negative-ink)]">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 text-sm">
+        <strong className="font-medium">System paused</strong>
         <span>
           {reason ?? "No reason recorded."}
           {since && <> Since {formatWhen(since)}.</>}

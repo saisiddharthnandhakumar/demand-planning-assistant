@@ -48,9 +48,9 @@ describe("real seed files", () => {
     expect(data.skus.find((s) => s.skuId === "SKU004")?.perishability).toBe("High");
   });
 
-  it("warns (but does not fail) about placeholder Zoho IDs", () => {
+  it("has no placeholder Zoho IDs left in the vendor map", () => {
     const result = validateSeed(real);
-    expect(result.warnings.some((w) => /PLACEHOLDER/.test(w.message))).toBe(true);
+    expect(result.warnings.some((w) => /PLACEHOLDER/.test(w.message))).toBe(false);
   });
 });
 

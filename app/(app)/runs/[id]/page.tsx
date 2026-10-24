@@ -35,7 +35,7 @@ export default async function RunPage({ params }: { params: Promise<{ id: string
           ← All runs
         </Link>
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight">Run {run.id.slice(0, 8)}</h1>
+          <h1 className="text-2xl font-medium tracking-tight">Run {run.id.slice(0, 8)}</h1>
           <StatusBadge status={run.status} />
         </div>
         <p className="text-sm text-muted-foreground">

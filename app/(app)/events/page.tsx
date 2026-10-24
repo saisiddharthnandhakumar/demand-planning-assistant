@@ -51,7 +51,7 @@ export default async function EventsPage() {
   return (
     <div className="space-y-8">
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Events</h1>
+        <h1 className="text-2xl font-medium tracking-tight">Events</h1>
         <p className="text-sm text-muted-foreground">
           Tell the system about things the sales data does not show yet, such as a competitor scheme. The AI turns your note into tags; you check and confirm them.
           A confirmed tag removes the tagged weeks from that SKU’s averages and sends the SKU to “Needs your judgment”. Today is week {currentWeek}.

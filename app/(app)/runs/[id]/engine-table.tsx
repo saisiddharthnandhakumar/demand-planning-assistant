@@ -12,6 +12,8 @@ import { DecisionFields, type DecisionMode } from "./decision-fields";
 import { ItemStatus } from "./item-status";
 import { useRunAction } from "./use-run-action";
 
+const FLAG_VARIANT = { HIGH_DEMAND: "info", STOCKOUT_RISK: "danger", OVERSTOCK_RISK: "warning" } as const;
+
 export function EngineTable({ runId, items, editable }: { runId: string; items: RunItemView[]; editable: boolean }) {
   const untouched = items.filter((i) => i.decisionStatus === "pending").length;
   return (
@@ -54,7 +56,7 @@ function EngineRow({ runId, item, editable }: { runId: string; item: RunItemView
     <Fragment>
       <TableRow>
         <TableCell className="whitespace-normal align-top">
-          <div className="font-medium">{item.skuId}</div>
+          <div className="figure text-[13px] font-medium">{item.skuId}</div>
           <div className="text-xs text-muted-foreground">{item.skuName}</div>
         </TableCell>
         <TableCell className="whitespace-normal align-top">
@@ -63,14 +65,14 @@ function EngineRow({ runId, item, editable }: { runId: string; item: RunItemView
               <span className="text-muted-foreground">—</span>
             ) : (
               item.flags.map((f) => (
-                <Badge key={f} variant={f === "HIGH_DEMAND" ? "secondary" : "outline"}>
+                <Badge key={f} variant={FLAG_VARIANT[f]}>
                   {FLAG_LABEL[f]}
                 </Badge>
               ))
             )}
           </div>
         </TableCell>
-        <TableCell className="text-right align-top tabular-nums">{item.coverWeeks?.toFixed(2) ?? "—"}</TableCell>
+        <TableCell className="figure text-right align-top">{item.coverWeeks?.toFixed(2) ?? "—"}</TableCell>
         <TableCell className="max-w-sm whitespace-normal align-top">
           <div className="font-medium">{describeAction(item.recommendedAction, item.recommendedQty)}</div>
           <div className="text-xs text-muted-foreground">{item.reason}</div>
@@ -114,7 +116,7 @@ function EngineRow({ runId, item, editable }: { runId: string; item: RunItemView
       </TableRow>
       {editable && mode && (
         <TableRow>
-          <TableCell colSpan={6} className="whitespace-normal bg-background">
+          <TableCell colSpan={6} className="whitespace-normal bg-muted/50">
             <DecisionFields
               idPrefix={`${item.skuId}-${mode}`}
               mode={mode}

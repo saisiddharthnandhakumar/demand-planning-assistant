@@ -131,6 +131,6 @@ describe("on the real seed files", () => {
       ["Placeholder Dairy Alt Supplier", 150], // SKU004
       ["Placeholder Staples Supplier", 800], // SKU003 + SKU011
     ]);
-    expect(orders.every((o) => o.hasPlaceholderIds)).toBe(true); // the sample map is placeholders only
+    expect(orders.every((o) => o.hasPlaceholderIds)).toBe(false); // the seed map now holds the real Zoho ids
   });
 });

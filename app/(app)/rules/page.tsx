@@ -17,7 +17,7 @@ export default async function RulesPage() {
   return (
     <div className="space-y-8">
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Rules</h1>
+        <h1 className="text-2xl font-medium tracking-tight">Rules</h1>
         <p className="text-sm text-muted-foreground">
           The thresholds the engine applies. Edit them here, no deploy needed. Changes apply from the next run.
         </p>

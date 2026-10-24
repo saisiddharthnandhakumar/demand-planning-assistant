@@ -36,12 +36,12 @@ describe("validateVendorMap", () => {
     expect(r.ok && r.warnings).toEqual(["2 of 3 rows still use PLACEHOLDER ids. Orders for them can be previewed but will not be sent to Zoho."]);
   });
 
-  it("the real seed file is valid for the 15 seed SKUs and is all placeholders", () => {
+  it("the real seed file is valid for the 15 seed SKUs and has no placeholder ids", () => {
     const rows = parseCsv(readFileSync(path.resolve(__dirname, "../seed/sku_vendor_map.csv"), "utf8"));
     const ids = Array.from({ length: 15 }, (_, i) => `SKU${String(i + 1).padStart(3, "0")}`);
     const r = validateVendorMap(rows, ids);
     expect(r.ok).toBe(true);
-    expect(r.warnings[0]).toContain("15 of 15 rows still use PLACEHOLDER ids");
+    expect(r.ok && r.warnings).toEqual([]);
   });
 });
 
